@@ -86,6 +86,7 @@ A função extrai esses `name`s via `FormData`. Todos são obrigatórios (exceto
 - `NomeEmpresaOndeTrabalha__c`, `PerfilLinkedin__c`
 - `ComoConheceuSaintPaul__c`, `AreaFormacao__c`
 - `QuandoPretendeIniciar__c` (opcional — omitido se vazio)
+- `phone_code` (opcional — DDI usado para compor o `mobile` quando o usuário não digita `+`. Ex.: `<select name="phone_code">` com valores como `+55`, `55`, `+1`, etc. Default `+55`.)
 
 Os valores aceitos por cada select estão definidos no início de `HandleHipMbaSalesforce.js` (constantes `CARGO`, `TEMPO_EXPERIENCIA`, etc.) e devem bater exatamente.
 
@@ -118,7 +119,7 @@ Regras aplicadas:
 | `PerfilLinkedin__c`                   | Deve conter `linkedin.com`.                                                        |
 | Selects                               | Valor exato em uma das whitelists.                                                 |
 
-Se o usuário digita o telefone sem DDI (ex.: `11999998888`), a função adiciona `+55` automaticamente.
+Se o usuário digita o telefone sem DDI (ex.: `11999998888`), a função usa o valor do `<select name="phone_code">` (se existir e tiver valor) para compor o DDI. Aceita formatos como `+55` ou `55` — só os dígitos são considerados. Se o select não existir ou estiver vazio, usa `+55` como fallback. Se o usuário já digitou o telefone com `+`, o `phone_code` é ignorado e o valor digitado é preservado.
 
 ## `extraHandlers` — envios paralelos
 

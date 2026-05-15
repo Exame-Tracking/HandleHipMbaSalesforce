@@ -162,12 +162,14 @@ const HandleHipMbaSalesforce = ({ formId, isTest = false, nivelEnsino, course, o
 
   const isValidEmail = (str) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
 
-  const normalizeMobile = (str) => {
+  const normalizeMobile = (str, phoneCode) => {
     if (typeof str !== 'string') return '';
     let cleaned = str.replace(/[^\d+]/g, '');
     if (cleaned.indexOf('+') > 0) cleaned = cleaned.replace(/\+/g, '');
-    if (!cleaned.startsWith('+')) cleaned = `+55${cleaned}`;
-    return cleaned;
+    if (cleaned.startsWith('+')) return cleaned;
+    const code = (phoneCode || '').toString().replace(/[^\d]/g, '');
+    const prefix = code || '55';
+    return `+${prefix}${cleaned}`;
   };
 
   const isValidMobile = (str) => {
@@ -215,7 +217,7 @@ const HandleHipMbaSalesforce = ({ formId, isTest = false, nivelEnsino, course, o
       first_name: sanitizeHTML(values.first_name),
       last_name: sanitizeHTML(values.last_name),
       email: (values.email || '').trim().toLowerCase(),
-      mobile: normalizeMobile(values.mobile || ''),
+      mobile: normalizeMobile(values.mobile || '', values.phone_code),
       Cargo__c: (values.Cargo__c || '').trim(),
       TempoExperienciaGestao__c: (values.TempoExperienciaGestao__c || '').trim(),
       NumeroLiderados__c: (values.NumeroLiderados__c || '').trim(),
