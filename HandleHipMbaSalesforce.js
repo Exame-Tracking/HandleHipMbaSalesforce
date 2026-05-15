@@ -1,4 +1,4 @@
-HandleHipMbaSalesforce = ({ formId, isTest = false, nivelEnsino, course, onSubmit, onValidationError, onSubmitError, extraHandlers = [] }) => {
+const HandleHipMbaSalesforce = ({ formId, isTest = false, nivelEnsino, course, onSubmit, onValidationError, onSubmitError, extraHandlers = [] }) => {
   const ENDPOINTS = {
     prod: 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8',
     test: 'https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8',
