@@ -210,6 +210,7 @@ const HandleHipMbaSalesforce = ({ formId, isTest = false, nivelEnsino, course, o
       oid,
       recordType,
       lead_source: LEAD_SOURCE,
+      IsWebtoLead__c: true,
       NivelEnsino__c: nivelEnsino,
       Course__c: course,
       LandingPageURL__c: window.location.href,
