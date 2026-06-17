@@ -1,4 +1,4 @@
-const HandleHipMbaSalesforce = ({ formId, isTest = false, nivelEnsino, course, onSubmit, onValidationError, onSubmitError, extraHandlers = [] }) => {
+const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = false, nivelEnsino, course, onSubmit, onValidationError, onSubmitError, extraHandlers = [] }) => {
   const ENDPOINTS = {
     prod: 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8',
     test: 'https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8',
@@ -183,7 +183,7 @@ const HandleHipMbaSalesforce = ({ formId, isTest = false, nivelEnsino, course, o
     return digits.length >= 7 && digits.length <= 15;
   };
 
-  const isLinkedinUrl = (str) => typeof str === 'string' && str.includes('linkedin.com');
+  const isLinkedinUrl = (str) => validateLinkedin ? (typeof str === 'string' && str.includes('linkedin.com')) : true;
 
   const getUTMs = () => {
     const params = new URLSearchParams(window.location.search);
