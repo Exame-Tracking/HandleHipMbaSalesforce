@@ -1,4 +1,4 @@
-const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = false, nivelEnsino, course, onSubmit, onValidationError, onSubmitError, extraHandlers = [] }) => {
+const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, past = true, isTest = false, nivelEnsino, course, onSubmit, onValidationError, onSubmitError, extraHandlers = [] }) => {
   const ENDPOINTS = {
     prod: 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8',
     test: 'https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8',
@@ -154,8 +154,7 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
     'NumeroLiderados__c',
     'NomeEmpresaOndeTrabalha__c',
     'PerfilLinkedin__c',
-    'ComoConheceuSaintPaul__c',
-    'AreaFormacao__c',
+    ...(past ? ['ComoConheceuSaintPaul__c', 'AreaFormacao__c'] : []),
   ];
 
   const sanitizeHTML = (str) => (typeof str === 'string' ? str.replace(/<[^>]*>/g, '').trim() : '');
