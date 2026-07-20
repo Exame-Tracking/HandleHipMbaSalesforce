@@ -197,7 +197,7 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
       recordType,
       lead_source: LEAD_SOURCE,
       IsWebtoLead__c: true,
-      NivelEnsino__c: nivelEnsino,
+      NivelEnsino__c: (values.NivelEnsino__c || '').trim() || nivelEnsino || '',
       Course__c: (values.Course__c || '').trim() || course || '',
       LandingPageURL__c: window.location.href,
       ...getUTMs(),

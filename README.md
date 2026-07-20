@@ -61,7 +61,7 @@ A função recebe um único objeto:
 |---------------------|--------------------------------------------|-------------|--------------------------------------------------------------------------------------------------------|
 | `formId`            | `string`                                   | Sim         | `id` do elemento `<form>` onde o listener será anexado.                                                |
 | `isTest`            | `boolean`                                  | Não         | `true` envia para `test.salesforce.com` (homologação). Default `false` (produção).                     |
-| `nivelEnsino`       | `string`                                   | Sim         | Valor do campo `NivelEnsino__c`. Aceita `HIP` ou `MBA Executivo`.                                      |
+| `nivelEnsino`       | `string`                                   | Não\*       | Valor default para `NivelEnsino__c`. Aceita `HIP` ou `MBA Executivo`. \*Obrigatório se o form não tiver um campo `NivelEnsino__c` (select ou radio). |
 | `course`            | `string`                                   | Não\*       | Valor default para `Course__c`. Aceita um dos cursos da whitelist (ver abaixo). \*Obrigatório se o form não tiver um campo `Course__c` (select ou radio). |
 | `onSubmit`          | `(payload) => void`                        | Não         | Callback disparado **apenas** se o POST ao Salesforce resolver. Recebe o payload final enviado.        |
 | `onValidationError` | `(errors) => void`                         | Não         | Disparado quando a validação interna falha. Recebe `Array<{field, message}>`. Chamado **após** o alert. |
@@ -77,11 +77,17 @@ A função recebe um único objeto:
 - `MBA Executivo em Liderança e Gestão`
 - `MBA Executivo em Finanças`
 
-### `Course__c` a partir do form
+### `Course__c` e `NivelEnsino__c` a partir do form
 
-Além do prop `course`, o valor de `Course__c` também pode vir de um campo do próprio form — útil quando o curso é escolhido pelo usuário em vez de ser fixado pela página:
+Além dos props `course` e `nivelEnsino`, esses valores também podem vir de campos do próprio form — útil quando o curso ou o nível de ensino são escolhidos pelo usuário em vez de fixados pela página:
 
 ```html
+<select name="NivelEnsino__c" required>
+  <option value="">Selecione…</option>
+  <option value="HIP">HIP</option>
+  <option value="MBA Executivo">MBA Executivo</option>
+</select>
+
 <select name="Course__c" required>
   <option value="">Selecione…</option>
   <option value="MBA Executivo em Finanças">MBA Executivo em Finanças</option>
@@ -93,7 +99,7 @@ Além do prop `course`, o valor de `Course__c` também pode vir de um campo do p
 <label><input type="radio" name="Course__c" value="FECC" /> FECC</label>
 ```
 
-Precedência: **se o form tiver um valor não-vazio para `Course__c`, ele vence**; o prop `course` é o fallback. O valor final continua sendo validado contra a whitelist acima.
+Precedência: **se o form tiver um valor não-vazio para o campo, ele vence**; o prop correspondente é o fallback. O valor final continua sendo validado contra a whitelist.
 
 ## Campos do form
 
@@ -103,6 +109,7 @@ A função extrai esses `name`s via `FormData`:
 - `Cargo__c`, `TempoExperienciaGestao__c`, `NumeroLiderados__c`
 - `NomeEmpresaOndeTrabalha__c`, `PerfilLinkedin__c`
 - `ComoConheceuSaintPaul__c`, `AreaFormacao__c`
+- `NivelEnsino__c` (opcional — se presente como select ou radio, sobrescreve o prop `nivelEnsino`)
 - `Course__c` (opcional — se presente como select ou radio, sobrescreve o prop `course`)
 - `QuandoPretendeIniciar__c` (omitido do payload se vazio)
 - `phone_code` (DDI usado para compor o `mobile` quando o usuário não digita `+`. Ex.: `<select name="phone_code">` com valores como `+55`, `55`, `+1`, etc. Default `+55`.)
