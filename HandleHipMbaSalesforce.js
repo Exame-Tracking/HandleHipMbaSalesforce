@@ -20,6 +20,8 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
     'FECC',
     'MBA Executivo em Liderança e Gestão',
     'MBA Executivo em Finanças',
+    'Pós-MBA Liderança',
+    'Pós-MBA Inteligência Artificial',
   ];
 
   const CARGO = [

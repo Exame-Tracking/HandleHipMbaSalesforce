@@ -76,6 +76,8 @@ A função recebe um único objeto:
 - `FECC`
 - `MBA Executivo em Liderança e Gestão`
 - `MBA Executivo em Finanças`
+- `Pós-MBA Liderança`
+- `Pós-MBA Inteligência Artificial`
 
 ### `Course__c` e `NivelEnsino__c` a partir do form
 
