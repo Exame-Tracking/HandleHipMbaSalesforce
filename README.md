@@ -79,16 +79,18 @@ A função recebe um único objeto:
 
 ## Campos do form
 
-A função extrai esses `name`s via `FormData`. Todos são obrigatórios (exceto `QuandoPretendeIniciar__c`):
+A função extrai esses `name`s via `FormData`:
 
 - `first_name`, `last_name`, `email`, `mobile`
 - `Cargo__c`, `TempoExperienciaGestao__c`, `NumeroLiderados__c`
 - `NomeEmpresaOndeTrabalha__c`, `PerfilLinkedin__c`
 - `ComoConheceuSaintPaul__c`, `AreaFormacao__c`
-- `QuandoPretendeIniciar__c` (opcional — omitido se vazio)
-- `phone_code` (opcional — DDI usado para compor o `mobile` quando o usuário não digita `+`. Ex.: `<select name="phone_code">` com valores como `+55`, `55`, `+1`, etc. Default `+55`.)
+- `QuandoPretendeIniciar__c` (omitido do payload se vazio)
+- `phone_code` (DDI usado para compor o `mobile` quando o usuário não digita `+`. Ex.: `<select name="phone_code">` com valores como `+55`, `55`, `+1`, etc. Default `+55`.)
 
-Os valores aceitos por cada select estão definidos no início de `HandleHipMbaSalesforce.js` (constantes `CARGO`, `TEMPO_EXPERIENCIA`, etc.) e devem bater exatamente.
+**Obrigatoriedade é controlada pelo HTML.** Qualquer `<input>`, `<select>` ou `<textarea>` marcado com o atributo `required` será validado como obrigatório; os demais são opcionais. Não há lista hardcoded no JS — para tornar um campo obrigatório ou opcional, basta adicionar/remover `required` no markup.
+
+Os valores aceitos por cada select estão definidos no início de `HandleHipMbaSalesforce.js` (constantes `CARGO`, `TEMPO_EXPERIENCIA`, etc.) e devem bater exatamente — essa validação de whitelist roda independentemente de o campo ser `required` ou não.
 
 ## O que a função adiciona ao payload automaticamente
 
@@ -112,7 +114,7 @@ Regras aplicadas:
 
 | Campo                                 | Regra                                                                              |
 |---------------------------------------|------------------------------------------------------------------------------------|
-| Campos obrigatórios                   | Não-vazios após trim.                                                              |
+| Campos com `required` no HTML         | Não-vazios após trim.                                                              |
 | `first_name`, `last_name`, empresa    | Tags HTML removidas (sanitização).                                                 |
 | `email`                               | Formato `x@y.z`, normalizado para lowercase + trim.                                |
 | `mobile`                              | Brasil (`+55`): 10–11 dígitos. Internacional: 7–15 dígitos. Sem espaços/traços.    |

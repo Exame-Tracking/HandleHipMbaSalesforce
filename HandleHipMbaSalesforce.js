@@ -1,4 +1,4 @@
-const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, past = true, isTest = false, nivelEnsino, course, onSubmit, onValidationError, onSubmitError, extraHandlers = [] }) => {
+const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = false, nivelEnsino, course, onSubmit, onValidationError, onSubmitError, extraHandlers = [] }) => {
   const ENDPOINTS = {
     prod: 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8',
     test: 'https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8',
@@ -144,19 +144,6 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, past = true, 
     'Zootecnia',
   ];
 
-  const REQUIRED_FIELDS = [
-    'first_name',
-    'last_name',
-    'email',
-    'mobile',
-    'Cargo__c',
-    'TempoExperienciaGestao__c',
-    'NumeroLiderados__c',
-    'NomeEmpresaOndeTrabalha__c',
-    'PerfilLinkedin__c',
-    ...(past ? ['ComoConheceuSaintPaul__c', 'AreaFormacao__c'] : []),
-  ];
-
   const sanitizeHTML = (str) => (typeof str === 'string' ? str.replace(/<[^>]*>/g, '').trim() : '');
 
   const isValidEmail = (str) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
@@ -233,14 +220,16 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, past = true, 
     return payload;
   };
 
-  const validate = (payload) => {
+  const validate = (payload, form) => {
     const errors = [];
 
-    for (const field of REQUIRED_FIELDS) {
-      if (!payload[field] || !String(payload[field]).trim()) {
-        errors.push({ field, message: 'Campo obrigatório' });
+    form.querySelectorAll('[required]').forEach((el) => {
+      const name = el.getAttribute('name');
+      if (!name) return;
+      if (!payload[name] || !String(payload[name]).trim()) {
+        errors.push({ field: name, message: 'Campo obrigatório' });
       }
-    }
+    });
 
     if (payload.email && !isValidEmail(payload.email)) {
       errors.push({ field: 'email', message: 'E-mail inválido' });
@@ -310,7 +299,7 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, past = true, 
 
     const values = readForm(form);
     const payload = buildPayload(values, env);
-    const errors = validate(payload);
+    const errors = validate(payload, form);
 
     if (errors.length > 0) {
       console.warn('[salesforceWebToLead] validation failed', errors);
