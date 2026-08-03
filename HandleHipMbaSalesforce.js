@@ -228,7 +228,7 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
     form.querySelectorAll('[required]').forEach((el) => {
       const name = el.getAttribute('name');
       if (!name) return;
-      if (!payload[name] || !String(payload[name]).trim()) {
+      if (!el.value || !String(el.value).trim()) {
         errors.push({ field: name, message: 'Campo obrigatório' });
       }
     });
