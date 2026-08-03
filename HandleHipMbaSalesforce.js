@@ -311,6 +311,13 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
       return;
     }
 
+    if (window.umami) {
+      window.umami.track("Lead");
+    }
+    if (window.fireLeadSubmit) {
+      window.fireLeadSubmit();
+    }
+
     const cleanPayload = omitEmpty(payload);
     const body = new URLSearchParams(cleanPayload).toString();
 
