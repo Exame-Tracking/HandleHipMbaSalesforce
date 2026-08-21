@@ -72,6 +72,7 @@ A função recebe um único objeto:
 
 - `ABP-W`
 - `PIACC`
+- `FIAC`
 - `SEER`
 - `FECC`
 - `MBA Executivo em Liderança e Gestão`

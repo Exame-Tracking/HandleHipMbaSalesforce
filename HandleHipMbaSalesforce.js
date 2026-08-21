@@ -16,6 +16,7 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
   const COURSE = [
     'ABP-W',
     'PIACC',
+    'FIAC',
     'SEER',
     'FECC',
     'MBA Executivo em Liderança e Gestão',
