@@ -5,7 +5,7 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
   };
 
   const CREDS = {
-    prod: { oid: '00Das0000070OmN', recordType: '012U600000GTule' },
+    prod: { oid: '00Das0000070OmN', recordType: '012U600000GFWKv' },
     test: { oid: '00DHZ0000066iir', recordType: '012HZ000006nrm6' },
   };
 
