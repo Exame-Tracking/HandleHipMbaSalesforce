@@ -5,8 +5,13 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
   };
 
   const CREDS = {
-    prod: { oid: '00Das0000070OmN', recordType: '012U600000GFWKv' },
+    prod: { oid: '00Das0000070OmN', recordType: '012U600000GTule' },
     test: { oid: '00DHZ0000066iir', recordType: '012HZ000006nrm6' },
+  };
+
+  const RECORD_TYPE_BY_NIVEL_ENSINO = {
+    prod: { HIP: '012U600000GFWKv' },
+    test: {},
   };
 
   const LEAD_SOURCE = 'Website Formulary';
@@ -195,12 +200,13 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
 
   const buildPayload = (values, env) => {
     const { oid, recordType } = CREDS[env];
+    const nivel = (values.NivelEnsino__c || '').trim() || nivelEnsino || '';
     const payload = {
       oid,
-      recordType,
+      recordType: RECORD_TYPE_BY_NIVEL_ENSINO[env][nivel] || recordType,
       lead_source: LEAD_SOURCE,
       IsWebtoLead__c: true,
-      NivelEnsino__c: (values.NivelEnsino__c || '').trim() || nivelEnsino || '',
+      NivelEnsino__c: nivel,
       Course__c: (values.Course__c || '').trim() || course || '',
       LandingPageURL__c: window.location.href,
       ...getUTMs(),
