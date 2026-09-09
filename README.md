@@ -4,7 +4,7 @@ Função única exposta em `HandleHipMbaSalesforce` que intercepta o submit de u
 
 ## Instalação
 
-Sirva o arquivo via CDN (jsDelivr a partir do GitHub) e inclua antes da chamada:
+Sirva o arquivo via CDN (jsDelivr a partir do GitHub) e chame a função dentro do `onload` do script. Veja [Versionamento e CDN (jsDelivr)](#versionamento-e-cdn-jsdelivr) antes de publicar qualquer alteração:
 
 ```html
 <script>
@@ -21,6 +21,102 @@ Sirva o arquivo via CDN (jsDelivr a partir do GitHub) e inclua antes da chamada:
   }));
 </script>
 ```
+
+## Versionamento e CDN (jsDelivr)
+
+Não existe build, deploy nem bucket: o jsDelivr serve o arquivo direto do GitHub. O que publica uma
+alteração é **criar uma tag no git** — nada além disso.
+
+### Anatomia da URL
+
+```
+https://cdn.jsdelivr.net/gh/Exame-Tracking/HandleHipMbaSalesforce@1/HandleHipMbaSalesforce.min.js?cb=…
+                         ^  ^                                    ^  ^                            ^
+                         gh repo                                 @1 arquivo servido              cache-buster
+```
+
+- `gh` — origem GitHub (não npm).
+- `@1` — o **seletor de versão**. É a peça que importa, explicada abaixo.
+- `HandleHipMbaSalesforce.min.js` — esse arquivo **não existe no repositório**. O jsDelivr minifica o
+  `HandleHipMbaSalesforce.js` na hora e serve com source map. Não commite um `.min.js`.
+- `?cb=${Math.floor(Date.now() / 600000)}` — bucket de 10 minutos que fura o cache do **navegador**.
+  Ele **não** fura o cache do jsDelivr — pra isso existe o purge.
+
+### Seletores de versão
+
+| Seletor           | Resolve para                                   | Cache na edge do jsDelivr |
+| ----------------- | ---------------------------------------------- | ------------------------- |
+| `@1`              | a última `v1.x.y` — **é o que as LPs usam**     | 7 dias                    |
+| `@1.4`            | a última `v1.4.x`                               | 7 dias                    |
+| `@1.4.1`          | exatamente essa tag, imutável                   | praticamente pra sempre   |
+| sem `@` / `@main` | o branch default                                | 12 horas                  |
+
+O `@1` é um **alias de major**: qualquer tag `v1.x.y` nova que você publicar passa a ser servida por
+ele automaticamente, sem tocar em nenhuma LP. É por isso que a URL das LPs é `@1` e não `@1.4.1`.
+
+Nunca aponte uma LP para um branch nem para `@latest` — o conteúdo muda sozinho a cada push e você
+perde o controle do que está em produção.
+
+### Como publicar uma alteração
+
+**Commit e push em `main` não mudam absolutamente nada no CDN.** O `@1` olha para tags, não para o
+branch. Só existe publicação quando uma tag nova aparece.
+
+**Crie a tag pela interface do GitHub.**
+
+1. Faça o commit e o push em `main` normalmente.
+2. Vá em **[Releases → Draft a new release](https://github.com/Exame-Tracking/HandleHipMbaSalesforce/releases/new)**.
+3. Em **Choose a tag**, digite a versão nova (`v1.4.2`) e clique em **Create new tag: v1.4.2 on publish**.
+4. Confirme que **Target** está em `main` e que o commit ali é o que você acabou de subir.
+5. Título igual à tag, descreva em uma linha o que mudou e clique em **Publish release**.
+6. Purgue o cache (seção abaixo). **Sem isso a alteração não chega nas LPs.**
+7. Confira que subiu, abrindo a URL no navegador (aba anônima)
+
+Padrão das versões: prefixo `v`, três números (`vX.Y.Z`), seguindo as tags que já existem. Qual dos
+três aumentar está na tabela do fim desta seção — e o primeiro, praticamente nunca.
+
+### Purge — https://www.jsdelivr.com/tools/purge
+
+Como `@1` é um alias, a edge do jsDelivr continua servindo a versão anterior por **até 7 dias** mesmo
+depois de a tag nova existir. O purge força a edge a rebuscar do GitHub na hora.
+
+Cole a URL em https://www.jsdelivr.com/tools/purge e execute. Detalhes que importam:
+
+- Purgue a URL **exatamente como a LP usa**, com `.min.js`. O purge é por URL: purgar o `.js` **não**
+  purga o `.min.js`.
+- URLs de versão exata (`@1.4.1`) são imutáveis — não precisa e não adianta purgar.
+- O `?cb=` do snippet não substitui o purge: ele só evita que o **navegador** reuse o arquivo antigo
+  que já baixou. Se a edge ainda tem a versão velha, o navegador recebe a versão velha de novo.
+- **Purge é passo obrigatório do release**, não é opcional. Sem ele, a alteração leva dias pra
+  aparecer nas LPs — e vai aparecer em horários diferentes em cada edge, o que é pior ainda pra
+  debugar.
+
+### Regra de ouro: não mexa no primeiro número
+
+O `@1` está **hardcoded em cada LP**. Trocar para `@2` no repositório não faz nada sozinho: as LPs
+continuam baixando a v1 pra sempre. Só passa a valer depois de entrar **LP por LP** e trocar a URL na
+mão.
+
+E é exatamente por isso que o major existe. Ele só se justifica quando a mudança **quebra a
+implementação anterior** — prop renomeada ou removida, `name` de campo do form alterado,
+comportamento default diferente. Nesse cenário você teria que ir de LP em LP de qualquer jeito, pra
+ajustar o HTML e o objeto de config; o `@2` só acompanha um trabalho que já era inevitável.
+
+O corolário prático é o mais útil no dia a dia: **se a alteração não obriga a mexer na LP, ela não é
+breaking** — é `minor` ou `patch`, e o `@1` distribui sozinho. Então, sempre que der, prefira
+retrocompatibilidade a um major: prop nova com default que preserva o comportamento antigo, aceitar o
+nome de campo velho **e** o novo, whitelist que ganha valores em vez de trocá-los.
+
+Se um v2 for mesmo inevitável: publique `v2.0.0`, **mantenha o `@1` vivo** (as LPs antigas continuam
+funcionando — é justamente o benefício do alias) e migre as LPs aos poucos.
+
+### Quando bumpar o quê
+
+| Bump    | Quando                                        | Exemplo no histórico                                |
+| ------- | --------------------------------------------- | --------------------------------------------------- |
+| `patch` | correção que não muda o contrato              | `v1.0.2` (`phone_code`), `v1.4.1` (recordType do HIP) |
+| `minor` | campo, curso ou prop nova, compatível         | `v1.1.0` (`validateLinkedin`), `v1.3.0` (leads)       |
+| `major` | quebra LPs existentes                         | nunca aconteceu — e o ideal é continuar assim         |
 
 ## Uso básico
 
