@@ -84,6 +84,17 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
 
   const NUMERO_LIDERADOS = ['1 a 20', '21 a 50', '51 a 100', 'Mais de 100'];
 
+  const RESPONSABILIDADE_ATUAL = [
+    'ResponsabilidadeEspecialista__c', // Especialista
+    'ResponsabilidadeCordenacao__c', // Coordeno projetos/pessoas informalmente
+    'ResponsabilidadeNaoLidero__c', // Não lidero equipe diretamente
+    'ResponsabilidadeEquipe__c', // Lidero outros profissionais / uma equipe
+    'ResponsabilidadeGestores__c', // Lidero outros gestores
+    'ResponsabilidadeAreas__c', // Lidero múltiplas áreas / equipes
+    'ResponsabilidadeUnidade__c', // Lidero uma unidade de negócio / empresa
+    'ResponsabilidadeExecutiva__c', // Tenho responsab. executiva pela função
+  ];
+
   const COMO_CONHECEU = [
     'ABRH-SP',
     'Cursos Gratuitos',
@@ -152,6 +163,20 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
     'Zootecnia',
   ];
 
+  const ATUACAO_FINANCAS = [
+    'Finanças / Controladoria',
+    'FP&A / Planejamento Financeiro',
+    'Tesouraria',
+    'Contabilidade',
+    'Auditoria',
+    'M&A / Corporate Finance',
+    'Mercado Financeiro / Investimentos',
+    'Riscos',
+    'Tributário',
+    'Estratégia',
+    'Outra',
+  ];
+
   const sanitizeHTML = (str) => (typeof str === 'string' ? str.replace(/<[^>]*>/g, '').trim() : '');
 
   const isValidEmail = (str) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
@@ -198,7 +223,21 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
     return out;
   };
 
-  const buildPayload = (values, env) => {
+  // FormData só enxerga checkbox marcado, então a leitura é feita direto no DOM:
+  // campo ausente do HTML fica fora do payload; presente vai como 'Sim'/'Não'.
+  const readResponsabilidade = (form) => {
+    const out = {};
+    RESPONSABILIDADE_ATUAL.forEach((name) => {
+      const el = form.querySelector('[name="' + name + '"]');
+      if (!el) return;
+      const marcado =
+        el.type === 'checkbox' || el.type === 'radio' ? el.checked : !!String(el.value || '').trim();
+      out[name] = marcado ? 'Sim' : 'Não';
+    });
+    return out;
+  };
+
+  const buildPayload = (values, env, form) => {
     const { oid, recordType } = CREDS[env];
     const nivel = (values.NivelEnsino__c || '').trim() || nivelEnsino || '';
     const payload = {
@@ -221,6 +260,9 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
       PerfilLinkedin__c: (values.PerfilLinkedin__c || '').trim(),
       ComoConheceuSaintPaul__c: (values.ComoConheceuSaintPaul__c || '').trim(),
       AreaFormacao__c: (values.AreaFormacao__c || '').trim(),
+      TempoExperienciaFinancas__c: (values.TempoExperienciaFinancas__c || '').trim(),
+      AtuacaoFinancas__c: (values.AtuacaoFinancas__c || '').trim(),
+      ...readResponsabilidade(form),
     };
 
     const quando = (values.QuandoPretendeIniciar__c || '').trim();
@@ -260,6 +302,8 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
       ['NumeroLiderados__c', NUMERO_LIDERADOS],
       ['ComoConheceuSaintPaul__c', COMO_CONHECEU],
       ['AreaFormacao__c', AREA_FORMACAO],
+      ['TempoExperienciaFinancas__c', TEMPO_EXPERIENCIA],
+      ['AtuacaoFinancas__c', ATUACAO_FINANCAS],
     ];
     for (const [name, allowed] of whitelist) {
       const v = payload[name];
@@ -307,7 +351,7 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
     clearErrorOutlines(form);
 
     const values = readForm(form);
-    const payload = buildPayload(values, env);
+    const payload = buildPayload(values, env, form);
     const errors = validate(payload, form);
 
     if (errors.length > 0) {

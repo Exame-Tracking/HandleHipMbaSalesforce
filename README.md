@@ -135,6 +135,21 @@ Chame a função **uma vez** após o DOM estar pronto. Ela mesma anexa o listene
   <input name="PerfilLinkedin__c" required />
   <select name="ComoConheceuSaintPaul__c" required>...</select>
   <select name="AreaFormacao__c" required>...</select>
+
+  <!-- opcionais: só existem nas LPs de Finanças -->
+  <select name="TempoExperienciaFinancas__c">...</select>
+  <select name="AtuacaoFinancas__c">...</select>
+
+  <!-- "Qual é o seu nível de responsabilidade atual no cargo?" (múltipla escolha) -->
+  <label><input type="checkbox" name="ResponsabilidadeEspecialista__c" /> Especialista</label>
+  <label><input type="checkbox" name="ResponsabilidadeCordenacao__c" /> Coordeno projetos/pessoas informalmente</label>
+  <label><input type="checkbox" name="ResponsabilidadeNaoLidero__c" /> Não lidero equipe diretamente</label>
+  <label><input type="checkbox" name="ResponsabilidadeEquipe__c" /> Lidero outros profissionais / uma equipe</label>
+  <label><input type="checkbox" name="ResponsabilidadeGestores__c" /> Lidero outros gestores</label>
+  <label><input type="checkbox" name="ResponsabilidadeAreas__c" /> Lidero múltiplas áreas / equipes</label>
+  <label><input type="checkbox" name="ResponsabilidadeUnidade__c" /> Lidero uma unidade de negócio / empresa</label>
+  <label><input type="checkbox" name="ResponsabilidadeExecutiva__c" /> Tenho responsab. executiva pela função</label>
+
   <button type="submit">Enviar</button>
 </form>
 
@@ -208,10 +223,35 @@ A função extrai esses `name`s via `FormData`:
 - `Cargo__c`, `TempoExperienciaGestao__c`, `NumeroLiderados__c`
 - `NomeEmpresaOndeTrabalha__c`, `PerfilLinkedin__c`
 - `ComoConheceuSaintPaul__c`, `AreaFormacao__c`
+- `TempoExperienciaFinancas__c`, `AtuacaoFinancas__c` (opcionais — usados nas LPs de Finanças; mesma mecânica dos demais selects)
 - `NivelEnsino__c` (opcional — se presente como select ou radio, sobrescreve o prop `nivelEnsino`)
 - `Course__c` (opcional — se presente como select ou radio, sobrescreve o prop `course`)
 - `QuandoPretendeIniciar__c` (omitido do payload se vazio)
 - `phone_code` (DDI usado para compor o `mobile` quando o usuário não digita `+`. Ex.: `<select name="phone_code">` com valores como `+55`, `55`, `+1`, etc. Default `+55`.)
+
+### Nível de responsabilidade (checkboxes → `Sim`/`Não`)
+
+A pergunta "Qual é o seu nível de responsabilidade atual no cargo?" aceita mais de uma opção, e cada opção é um campo próprio no Salesforce:
+
+| `name` no form                    | Opção                                        |
+|-----------------------------------|----------------------------------------------|
+| `ResponsabilidadeEspecialista__c` | Especialista                                 |
+| `ResponsabilidadeCordenacao__c`   | Coordeno projetos/pessoas informalmente      |
+| `ResponsabilidadeNaoLidero__c`    | Não lidero equipe diretamente                |
+| `ResponsabilidadeEquipe__c`       | Lidero outros profissionais / uma equipe     |
+| `ResponsabilidadeGestores__c`     | Lidero outros gestores                       |
+| `ResponsabilidadeAreas__c`        | Lidero múltiplas áreas / equipes             |
+| `ResponsabilidadeUnidade__c`      | Lidero uma unidade de negócio / empresa      |
+| `ResponsabilidadeExecutiva__c`    | Tenho responsab. executiva pela função       |
+
+Regras:
+
+- Marcado vai como `"Sim"`, **desmarcado vai como `"Não"`** — o campo é enviado nos dois casos.
+- **Só é enviado o que existe no HTML.** Se a LP não tem o checkbox, o campo não entra no payload (LPs antigas continuam com o payload idêntico ao de antes).
+- Diferente dos selects, esses campos são lidos direto do DOM — `FormData` só enxerga checkbox marcado, e aí não dá pra distinguir "desmarcado" de "não existe no form".
+- O `value` do checkbox é irrelevante: o que conta é o estado `checked`. Se a opção for renderizada como `input hidden`/`select` em vez de checkbox, vale o `value` não-vazio.
+- Não passam por whitelist — o valor é gerado pelo próprio JS.
+- ⚠️ `required` num checkbox **não** é pego pela checagem de obrigatoriedade (o `value` de um checkbox desmarcado continua sendo `"on"`). Para exigir pelo menos uma escolha, valide no próprio HTML/LP.
 
 **Obrigatoriedade é controlada pelo HTML.** Qualquer `<input>`, `<select>` ou `<textarea>` marcado com o atributo `required` será validado como obrigatório; os demais são opcionais. Não há lista hardcoded no JS — para tornar um campo obrigatório ou opcional, basta adicionar/remover `required` no markup.
 
@@ -245,6 +285,7 @@ Regras aplicadas:
 | `mobile`                              | Brasil (`+55`): 10–11 dígitos. Internacional: 7–15 dígitos. Sem espaços/traços.    |
 | `PerfilLinkedin__c`                   | Deve conter `linkedin.com`.                                                        |
 | Selects                               | Valor exato em uma das whitelists.                                                 |
+| Checkboxes `Responsabilidade*__c`     | Sem whitelist — o JS gera `Sim`/`Não` a partir do `checked`.                        |
 
 Se o usuário digita o telefone sem DDI (ex.: `11999998888`), a função usa o valor do `<select name="phone_code">` (se existir e tiver valor) para compor o DDI. Aceita formatos como `+55` ou `55` — só os dígitos são considerados. Se o select não existir ou estiver vazio, usa `+55` como fallback. Se o usuário já digitou o telefone com `+`, o `phone_code` é ignorado e o valor digitado é preservado.
 
