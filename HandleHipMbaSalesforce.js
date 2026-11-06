@@ -202,7 +202,9 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
     return digits.length >= 7 && digits.length <= 15;
   };
 
-  const isLinkedinUrl = (str) => validateLinkedin ? (typeof str === 'string' && str.includes('linkedin.com')) : true;
+  // Case-insensitive: teclado do celular capitaliza a 1ª letra ("Linkedin.com/...") e a URL colada
+  // pode vir com caixa mista ("LinkedIn.com"). Aceita também o link curto lnkd.in.
+  const isLinkedinUrl = (str) => !validateLinkedin || /linkedin\.com|lnkd\.in/i.test(String(str || ''));
 
   const getUTMs = () => {
     const params = new URLSearchParams(window.location.search);
