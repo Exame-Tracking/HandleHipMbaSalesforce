@@ -310,7 +310,8 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
     }
 
     if (payload.PerfilLinkedin__c && !isLinkedinUrl(payload.PerfilLinkedin__c)) {
-      errors.push({ field: 'PerfilLinkedin__c', message: 'URL deve conter linkedin.com' });
+      // Mensagem mostra os formatos aceitos (URL completa ou só in/<perfil>) em vez de exigir "linkedin.com".
+      errors.push({ field: 'PerfilLinkedin__c', message: 'Informe o link do seu perfil do LinkedIn (ex.: linkedin.com/in/seu-perfil ou in/seu-perfil)' });
     }
 
     const whitelist = [
