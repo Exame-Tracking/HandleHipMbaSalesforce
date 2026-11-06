@@ -202,11 +202,26 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
     return digits.length >= 7 && digits.length <= 15;
   };
 
+  // Formatos curtos viram URL completa ANTES de validar e enviar: o Salesforce, os extraHandlers e o
+  // enriquecimento (linkedin-data-scraper, que só reconhece "linkedin.com/in/<slug>") recebem o
+  // mesmo valor. "in/joao-silva" e "/in/joao-silva/" (valor inteiro, sem espaço nem subcaminho)
+  // -> https://www.linkedin.com/in/joao-silva; "lnkd.in/abc" sem protocolo -> https://lnkd.in/abc
+  // (o código do link curto diferencia maiúsculas, então é mantido como digitado).
+  const LINKEDIN_PROFILE_PATH_RE = /^\/?in\/([^\s/]+)\/?$/i;
+  const LNKD_SHORT_LINK_RE = /^(?:https?:\/\/)?(?:www\.)?lnkd\.in\/(\S+)$/i;
+  const normalizeLinkedin = (str) => {
+    const value = (str || '').trim();
+    const profilePath = value.match(LINKEDIN_PROFILE_PATH_RE);
+    if (profilePath) return `https://www.linkedin.com/in/${profilePath[1]}`;
+    const shortLink = value.match(LNKD_SHORT_LINK_RE);
+    if (shortLink) return `https://lnkd.in/${shortLink[1]}`;
+    return value;
+  };
+
   // Case-insensitive: teclado do celular capitaliza a 1ª letra ("Linkedin.com/...") e a URL colada
-  // pode vir com caixa mista ("LinkedIn.com"). Aceita também o link curto lnkd.in e só o caminho
-  // do perfil sem domínio ("in/joao-silva", "/in/joao-silva/") — ancorado pra valer o valor inteiro.
-  const LINKEDIN_PATTERN = /linkedin\.com|lnkd\.in|^\/?in\/[^\s/]+\/?$/i;
-  const isLinkedinUrl = (str) => !validateLinkedin || LINKEDIN_PATTERN.test(String(str || ''));
+  // pode vir com caixa mista ("LinkedIn.com"). Roda sobre o valor já normalizado, então "in/<perfil>"
+  // chega aqui como URL completa.
+  const isLinkedinUrl = (str) => !validateLinkedin || /linkedin\.com|lnkd\.in/i.test(String(str || ''));
 
   const getUTMs = () => {
     const params = new URLSearchParams(window.location.search);
@@ -261,7 +276,7 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
       TempoExperienciaGestao__c: (values.TempoExperienciaGestao__c || '').trim(),
       NumeroLiderados__c: (values.NumeroLiderados__c || '').trim(),
       NomeEmpresaOndeTrabalha__c: sanitizeHTML(values.NomeEmpresaOndeTrabalha__c),
-      PerfilLinkedin__c: (values.PerfilLinkedin__c || '').trim(),
+      PerfilLinkedin__c: normalizeLinkedin(values.PerfilLinkedin__c),
       ComoConheceuSaintPaul__c: (values.ComoConheceuSaintPaul__c || '').trim(),
       AreaFormacao__c: (values.AreaFormacao__c || '').trim(),
       TempoExperienciaFinancas__c: (values.TempoExperienciaFinancas__c || '').trim(),

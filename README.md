@@ -283,7 +283,7 @@ Regras aplicadas:
 | `first_name`, `last_name`, empresa    | Tags HTML removidas (sanitização).                                                 |
 | `email`                               | Formato `x@y.z`, normalizado para lowercase + trim.                                |
 | `mobile`                              | Brasil (`+55`): 10–11 dígitos. Internacional: 7–15 dígitos. Sem espaços/traços.    |
-| `PerfilLinkedin__c`                   | Deve conter `linkedin.com` ou `lnkd.in`, ou ser só o caminho `in/<perfil>`. Sem diferenciar maiúsculas/minúsculas. |
+| `PerfilLinkedin__c`                   | Deve conter `linkedin.com` ou `lnkd.in`, ou ser só o caminho `in/<perfil>`. Sem diferenciar maiúsculas/minúsculas. Formatos curtos são enviados como URL completa: `in/<perfil>` → `https://www.linkedin.com/in/<perfil>`, `lnkd.in/<código>` → `https://lnkd.in/<código>`. |
 | Selects                               | Valor exato em uma das whitelists.                                                 |
 | Checkboxes `Responsabilidade*__c`     | Sem whitelist — o JS gera `Sim`/`Não` a partir do `checked`.                        |
 
