@@ -203,8 +203,10 @@ const HandleHipMbaSalesforce = ({ formId, validateLinkedin = true, isTest = fals
   };
 
   // Case-insensitive: teclado do celular capitaliza a 1ª letra ("Linkedin.com/...") e a URL colada
-  // pode vir com caixa mista ("LinkedIn.com"). Aceita também o link curto lnkd.in.
-  const isLinkedinUrl = (str) => !validateLinkedin || /linkedin\.com|lnkd\.in/i.test(String(str || ''));
+  // pode vir com caixa mista ("LinkedIn.com"). Aceita também o link curto lnkd.in e só o caminho
+  // do perfil sem domínio ("in/joao-silva", "/in/joao-silva/") — ancorado pra valer o valor inteiro.
+  const LINKEDIN_PATTERN = /linkedin\.com|lnkd\.in|^\/?in\/[^\s/]+\/?$/i;
+  const isLinkedinUrl = (str) => !validateLinkedin || LINKEDIN_PATTERN.test(String(str || ''));
 
   const getUTMs = () => {
     const params = new URLSearchParams(window.location.search);
